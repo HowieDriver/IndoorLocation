@@ -55,7 +55,7 @@ def fin_pso(absolute_x, absolute_y, distrection2):
         v[v < Vmin] = Vmin
 
         # 位置更新
-        #pop = pop + v
+        pop = pop + 0.5 * v
 
         for jj in range(MumberOfparm):
             for j in range(sizepop):

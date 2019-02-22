@@ -6,77 +6,58 @@ import matplotlib.mlab as mlab
 import numpy as np
 from compiler.ast import flatten
 from plot import topk
-
+NumberOfTotalNode = 6
 import plot
-D = [[0, 244, 268, 215], [244, 0, 88, 146], [268, 88, 0, 91], [215, 146, 91, 0]]
-#D = [[0, 100, 200, 100], [100, 0, 100, 200], [200, 100, 0, 100], [100, 200, 100, 0]]
-D = np.mat(D)
-D2 = np.multiply(D, D)
-# D2 = [[  0,  50, 100,  50,  25],
-#      [ 50,   0,  50, 100,  25],
-#      [100,  50,   0,  50,  25],
-#      [ 50, 100,  50,   0,  25],
-#      [ 25,  25,  25,  25,  0]]
-# D2 = np.mat(D2)
-print "D2 = ", D2
-E = np.mat(np.eye(4, 4, dtype=int))
-l = np.mat(np.ones((4, 1)))
-I = l*(l.T)
-H =  E - 0.25*I
-print "H=", H
-B = -0.5 * H*D2*H
-print "B=", B
+def mds_fun(P):
+    D2 = np.mat(P)
+    E = np.mat(np.eye(NumberOfTotalNode, NumberOfTotalNode, dtype=int))
+    l = np.mat(np.ones((NumberOfTotalNode, 1)))
+    I = l * (l.T)
+    H = E - (1.0 / NumberOfTotalNode) * I
+    B = -0.5 * H * D2 * H
 
-eigvals,eigvectors = np.linalg.eig(B)
-print("eigvals=")
-print eigvals
-print("eigvectors=")
-print eigvectors
-vals, vecs = topk(B, 2)
-print("vals=")
-print vals
-print("vecs=")
-print vecs
+    vals, vecs = topk(B, 2)  # 特征分解，提取特征值最大的两个特征值和特征向量
+    eigvalsMat = np.mat(np.diag(np.sqrt(vals)))
+    Loc = vecs * eigvalsMat
 
-eigvalsMat = np.mat(np.diag(np.sqrt(vals)))
-Loc = vecs * eigvalsMat
-print Loc
+    x = Loc[:, 0]
+    y = Loc[:, 1]
+    x = np.array(x)
+    y = np.array(y)
+    x = x.flatten()  # 矩阵降维
+    y = y.flatten()
+    # plt.scatter(x, y, color='blue')
+    #
+    # # #画出点之间的连线
+    # plt.plot(x, y, color='green')
+    # xt = []
+    # xt.append(x[0])
+    # xt.append(x[3])
+    # yt = []
+    # yt.append(y[0])
+    # yt.append(y[3])
+    # plt.plot(xt, yt, color='green')
+    # xt = []
+    # xt.append(x[0])
+    # xt.append(x[2])
+    # yt = []
+    # yt.append(y[0])
+    # yt.append(y[2])
+    # plt.plot(xt, yt, color='green')
+    # xt = []
+    # xt.append(x[1])
+    # xt.append(x[3])
+    # yt = []
+    # yt.append(y[1])
+    # yt.append(y[3])
+    # plt.plot(xt, yt, color='green')
+    #
+    # # 给多维标度产生的锚节点标记A, B, C, D, E标记
+    # plt.text(x[0], y[0], "A", ha='right', va='top', fontsize=10)
+    # plt.text(x[1], y[1], "B", ha='right', va='top', fontsize=10)
+    # plt.text(x[2], y[2], "C", ha='right', va='top', fontsize=10)
+    # plt.text(x[3], y[3], "D", ha='right', va='top', fontsize=10)
+    # plt.text(x[4], y[4], "E", ha='right', va='top', fontsize=10)
+    # plt.show()
 
-x = Loc[:,0]
-y = Loc[:,1]
-#x = np.array(x)
-#y = np.array(y)
-x = x.tolist()
-y = y.tolist()
-x = flatten(x)
-y = flatten(y)
-
-plt.scatter(x, y, color = 'blue')
-plt.plot(x, y, color = 'green')
-
-xt = []
-xt.append(x[0])
-xt.append(x[3])
-yt = []
-yt.append(y[0])
-yt.append(y[3])
-plt.plot(xt, yt, color = 'green')
-
-xt = []
-xt.append(x[0])
-xt.append(x[2])
-yt = []
-yt.append(y[0])
-yt.append(y[2])
-plt.plot(xt, yt, color = 'green')
-xt = []
-xt.append(x[1])
-xt.append(x[3])
-yt = []
-yt.append(y[1])
-yt.append(y[3])
-plt.plot(xt, yt, color = 'green')
-plt.show()
-
-#if __name__ == "__main__":
-#    plot.gaussNoise()
+    return Loc, x, y

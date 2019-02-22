@@ -23,8 +23,6 @@ def fin_pso(absolute_x, absolute_y, distrection2, target_x, target_y):
     diff_y = sum(absolute_y) / len(absolute_y)
     base_x = target_x + diff_x
     base_y = target_y + diff_y
-    # print "based_x=", base_x
-    # print "based_y=", base_y
 
     # 参数初始化
     w = 1.0
@@ -32,7 +30,7 @@ def fin_pso(absolute_x, absolute_y, distrection2, target_x, target_y):
     c2 = 1.49445
 
     maxgen = 2000  # 进化次数
-    sizepop = 400  # 种群规模,群体较小时容易陷入局部最优解
+    sizepop = 200  # 种群规模,群体较小时容易陷入局部最优解
                     #群体较大当数目到一定程度优化变化不明显
 
     # 粒子速度和位置的范围
@@ -45,6 +43,20 @@ def fin_pso(absolute_x, absolute_y, distrection2, target_x, target_y):
     pop = 5 * np.random.uniform(-1, 1, (MumberOfparm, sizepop))
     pop[0][0] = base_x
     pop[1][0] = base_y
+
+    pop[0][1] = base_x + 2.5
+    pop[1][1] = base_y + 2.5
+    pop[0][2] = base_x + 2.5
+    pop[1][2] = base_y
+    pop[0][3] = base_x
+    pop[1][3] = base_y + 2.5
+
+    pop[0][4] = base_x - 2.5
+    pop[1][4] = base_y - 2.5
+    pop[0][5] = base_x - 2.5
+    pop[1][5] = base_y
+    pop[0][6] = base_x
+    pop[1][6] = base_y - 2.5
 
     v = np.random.uniform(-1, 1, (MumberOfparm, sizepop))
 
@@ -66,7 +78,7 @@ def fin_pso(absolute_x, absolute_y, distrection2, target_x, target_y):
         v[v < Vmin] = Vmin
 
         # 位置更新
-        #pop = pop + v
+        pop = pop + v
 
         for jj in range(MumberOfparm):
             for j in range(sizepop):
@@ -78,8 +90,8 @@ def fin_pso(absolute_x, absolute_y, distrection2, target_x, target_y):
         # 自适应变异
         p = np.random.random()             # 随机生成一个0~1内的数
         if p > 0.8:                          # 如果这个数落在变异概率区间内，则进行变异处理
-            k = np.random.randint(0,MumberOfparm)     # 在[0,MumberOfparm)之间随机选一个整数
-            pop[:,k] = np.random.random()  # 在选定的位置进行变异
+            k = np.random.randint(0, MumberOfparm)     # 在[0,MumberOfparm)之间随机选一个整数
+            pop[:, k] = np.random.random()  # 在选定的位置进行变异
 
         # 计算适应度值
         fitness = ras(absolute_x, absolute_y, distrection2, pop)
@@ -98,9 +110,9 @@ def fin_pso(absolute_x, absolute_y, distrection2, target_x, target_y):
         t = t + 1
 
     # 结果分析
-    # plt.plot(record, 'b-')
-    # plt.xlabel('generation')
-    # plt.ylabel('fitness')
-    # plt.title('fitness curve')
-    # plt.show()
+    plt.plot(record, 'b-')
+    plt.xlabel('generation')
+    plt.ylabel('fitness')
+    plt.title('fitness curve')
+    plt.show()
     return zbest, record[t-1]

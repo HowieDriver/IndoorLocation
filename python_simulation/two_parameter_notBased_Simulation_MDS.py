@@ -10,15 +10,13 @@ from plot import topk
 from plot import addGaussNoise
 from two_parameter_notBased_PSO_MDS import fin_pso
 
-
-
-#实际分布图
-def actualFigure():
+def actualFigure(anchor_x, anchor_y, target_x, target_y, parm_array_x, parm_array_y):
+    RMSE = 0
     plt.scatter(anchor_x, anchor_y, color = 'blue', marker= 's')#离散点
     plt.scatter(target_x, target_y, color='green', marker='^')  # 离散点
     plt.scatter(parm_array_x, parm_array_y, color='red', marker='o')  # 离散点
 
-    for i in range(10):
+    for i in range(NumberOfTargetNode):
         tx = []
         tx.append(parm_array_x[i])
         tx.append(target_x[i])
@@ -26,7 +24,13 @@ def actualFigure():
         ty.append(parm_array_y[i])
         ty.append(target_y[i])
         plt.plot(tx, ty, color='black')
+
+        diffD = (parm_array_x[i] - target_x[i])**2 + (parm_array_y[i] - target_y[i])**2
+        RMSE += diffD
+    RMSE = (RMSE/NumberOfTargetNode)**0.5
+    #print "RMSE=", RMSE
     plt.show()
+    return RMSE
 
 NumberOfTargetNode = 10
 NumberOfAnchorNode = 5
@@ -58,59 +62,7 @@ for i in range (NumberOfTargetNode):
     for k in range(NumberOfAnchorNode):
         P[NumberOfAnchorNode][k] = d2[k]
 
-    D2 = np.mat(P)
-    E = np.mat(np.eye(NumberOfTotalNode, NumberOfTotalNode, dtype=int))
-    l = np.mat(np.ones((NumberOfTotalNode, 1)))
-    I = l * (l.T)
-    H = E - (1.0/NumberOfTotalNode) * I
-    B = -0.5 * H * D2 * H
 
-    vals, vecs = topk(B, 2)#特征分解，提取特征值最大的两个特征值和特征向量
-    eigvalsMat = np.mat(np.diag(np.sqrt(vals)))
-    Loc = vecs * eigvalsMat
-
-    x = Loc[:, 0]
-    y = Loc[:, 1]
-    x = np.array(x)
-    y = np.array(y)
-    x = x.flatten() #矩阵降维
-    y = y.flatten()
-    plt.scatter(x, y, color='blue')
-
-    # #画出点之间的连线
-    plt.plot(x, y, color='green')
-    xt = []
-    xt.append(x[0])
-    xt.append(x[3])
-    yt = []
-    yt.append(y[0])
-    yt.append(y[3])
-    plt.plot(xt, yt, color='green')
-    xt = []
-    xt.append(x[0])
-    xt.append(x[2])
-    yt = []
-    yt.append(y[0])
-    yt.append(y[2])
-    plt.plot(xt, yt, color='green')
-    xt = []
-    xt.append(x[1])
-    xt.append(x[3])
-    yt = []
-    yt.append(y[1])
-    yt.append(y[3])
-    plt.plot(xt, yt, color='green')
-
-    #给多维标度产生的锚节点标记A, B, C, D, E标记
-    plt.text(x[0], y[0], "A", ha='right', va='top', fontsize=10)
-    plt.text(x[1], y[1], "B", ha='right', va='top', fontsize=10)
-    plt.text(x[2], y[2], "C", ha='right', va='top', fontsize=10)
-    plt.text(x[3], y[3], "D", ha='right', va='top', fontsize=10)
-    plt.text(x[4], y[4], "E", ha='right', va='top', fontsize=10)
-    plt.show()
-
-    target_realtive_x = x[5]
-    target_realtive_y = y[5]
     parm, diff = fin_pso(anchor_x, anchor_y, d2)
     # 结果分析
     # print "群体最优解："
@@ -125,4 +77,5 @@ for i in range (NumberOfTargetNode):
     parm_array_y.append(parm[1])
 
 
-actualFigure()
+RMSE = actualFigure(anchor_x, anchor_y, target_x, target_y, parm_array_x, parm_array_y)
+print "RMSE=", RMSE
