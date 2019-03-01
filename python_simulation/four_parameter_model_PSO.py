@@ -22,11 +22,11 @@ def ras(absolute_x, absolute_y, relative_x, relative_y, parameter):
 def fin_pso(absolute_x, absolute_y, relative_x, relative_y):
     MumberOfparm = 4
     # 参数初始化
-    w = 1.0
+    w = 0.1
     c1 = 1.49445
     c2 = 1.49445
 
-    maxgen = 2000  # 进化次数
+    maxgen = 50  # 进化次数
     sizepop = 500  # 种群规模,群体较小时容易陷入局部最优解
                     #群体较大当数目到一定程度优化变化不明显
 
@@ -62,7 +62,7 @@ def fin_pso(absolute_x, absolute_y, relative_x, relative_y):
         v[v < Vmin] = Vmin
 
         # 位置更新
-        pop = pop + 0.5 * v;
+        pop = pop + v
         for jj in range(MumberOfparm):
             for j in range(sizepop):
                 if pop[jj][j] > popmax[jj]:
@@ -73,8 +73,10 @@ def fin_pso(absolute_x, absolute_y, relative_x, relative_y):
         # 自适应变异
         p = np.random.random()             # 随机生成一个0~1内的数
         if p > 0.8:                          # 如果这个数落在变异概率区间内，则进行变异处理
+            temp = np.random.random()
+            temp *= 5
             k = np.random.randint(0,MumberOfparm)     # 在[0,2)之间随机选一个整数
-            pop[:,k] = np.random.random()  # 在选定的位置进行变异
+            pop[:,k] = temp  # 在选定的位置进行变异
 
 
         # 计算适应度值
@@ -95,9 +97,10 @@ def fin_pso(absolute_x, absolute_y, relative_x, relative_y):
         t = t + 1
 
     # 结果分析
-    # plt.plot(record, 'b-')
-    # plt.xlabel('generation')
-    # plt.ylabel('fitness')
-    # plt.title('fitness curve')
-    # plt.show()
+    plt.plot(record, 'b-',label='1234')
+    plt.xlabel(u'迭代次数')
+    plt.ylabel(u'适应度')
+    plt.title(u'适应度曲线,群组大小为500')
+    print plt.ylim()
+    plt.show()
     return zbest,record[t-1]

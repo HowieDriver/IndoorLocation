@@ -5,11 +5,14 @@ sys.setdefaultencoding('utf-8')
 
 import numpy as np
 import matplotlib.pyplot as plt
+from pylab import *     #支持中文显示和负号
+mpl.rcParams['font.sans-serif'] = ['SimHei']
+plt.rcParams['axes.unicode_minus'] = False
 np.set_printoptions(suppress=True)#禁止科学计数法显示结果
 # 目标函数定义，x中每个元素对应一个参数
-def ras(absolute_x, absolute_y, d2, parameter):
+def ras(absolute_x, absolute_y, d2, parameter, NumberOfAnchorNode):
     y = 0
-    for i in range(5):
+    for i in range(NumberOfAnchorNode):
         t = np.square((np.square( parameter[0] - absolute_x[i] ) + np.square( parameter[1] - absolute_y[i] ) )**0.5
                 - (d2[i])**0.5 )
         y += t
@@ -17,7 +20,7 @@ def ras(absolute_x, absolute_y, d2, parameter):
     y = y**0.5
     return y
 
-def fin_pso(absolute_x, absolute_y, distrection2, target_x, target_y):
+def fin_pso(absolute_x, absolute_y, distrection2, target_x, target_y, NumberOfAnchorNode):
     MumberOfparm = 2 #参数个数
     diff_x = sum(absolute_x) / len(absolute_x)
     diff_y = sum(absolute_y) / len(absolute_y)
@@ -29,7 +32,7 @@ def fin_pso(absolute_x, absolute_y, distrection2, target_x, target_y):
     c1 = 1.49445
     c2 = 1.49445
 
-    maxgen = 2000  # 进化次数
+    maxgen = 200  # 进化次数
     sizepop = 200  # 种群规模,群体较小时容易陷入局部最优解
                     #群体较大当数目到一定程度优化变化不明显
 
@@ -60,7 +63,7 @@ def fin_pso(absolute_x, absolute_y, distrection2, target_x, target_y):
 
     v = np.random.uniform(-1, 1, (MumberOfparm, sizepop))
 
-    fitness = ras(absolute_x, absolute_y, distrection2, pop)  # 计算适应度
+    fitness = ras(absolute_x, absolute_y, distrection2, pop, NumberOfAnchorNode)  # 计算适应度
     i = np.argmin(fitness)  # 找最好的个体
     gbest = pop  # 记录个体最优位置，第一次就是最好
     zbest = pop[:, i]  # 记录群体最优位置
@@ -94,7 +97,7 @@ def fin_pso(absolute_x, absolute_y, distrection2, target_x, target_y):
             pop[:, k] = np.random.random()  # 在选定的位置进行变异
 
         # 计算适应度值
-        fitness = ras(absolute_x, absolute_y, distrection2, pop)
+        fitness = ras(absolute_x, absolute_y, distrection2, pop, NumberOfAnchorNode)
         # 个体最优位置更新
         index = fitness < fitnessgbest
         fitnessgbest[index] = fitness[index]
@@ -111,8 +114,8 @@ def fin_pso(absolute_x, absolute_y, distrection2, target_x, target_y):
 
     # 结果分析
     plt.plot(record, 'b-')
-    plt.xlabel('generation')
-    plt.ylabel('fitness')
-    plt.title('fitness curve')
+    plt.xlabel(u'迭代次数')
+    plt.ylabel(u'适应度')
+    plt.title(u'适应度曲线')
     plt.show()
     return zbest, record[t-1]

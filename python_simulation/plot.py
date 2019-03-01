@@ -26,12 +26,14 @@ def histFigure():
     sampleNo = 100
     np.random.seed(0)
     s = np.random.normal(mu, sigma, sampleNo)
-    print s
+    # print s
     plt.hist(s, bins=100, normed=True, color="green")
     plt.xlabel("x")
     plt.ylabel("y")
-    plt.text(-4, 0.30, r'$\mu=0,\ \sigma=1$')#在x轴-4， y轴0.30开始加入说明
-    plt.title("title of relationship of x and y")
+    a = 10
+    plt.text(-2, 1, r'$\mu=0,\ \sigma=1$')#在x轴-4， y轴0.30开始加入说明
+    string = "1234"
+    plt.title(u"中文"+string)
     plt.show()
 
 def subFigure():
@@ -85,4 +87,4 @@ def gaussNoise():
     plt.plot(x, y, "g.")
     plt.show()
 
-#scatterFigure()
+# histFigure()

@@ -6,9 +6,8 @@ import matplotlib.mlab as mlab
 import numpy as np
 from compiler.ast import flatten
 from plot import topk
-NumberOfTotalNode = 6
 import plot
-def mds_fun(P):
+def mds_fun(P, NumberOfTotalNode):
     D2 = np.mat(P)
     E = np.mat(np.eye(NumberOfTotalNode, NumberOfTotalNode, dtype=int))
     l = np.mat(np.ones((NumberOfTotalNode, 1)))
