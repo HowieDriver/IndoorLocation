@@ -52,17 +52,17 @@ while True:
 
     for k in range(NumberOfAnchorNode):
         P[k][NumberOfAnchorNode] = d2[k]
-	for k in range(NumberOfAnchorNode):
-		    P[NumberOfAnchorNode][k] = d2[k]
+    for k in range(NumberOfAnchorNode):
+        P[NumberOfAnchorNode][k] = d2[k]
 
-	parm, diff = getLocAfterPSO(P, d2)
-	#print "最小Difference值："
-	#print diff
-
-	#print "实际坐标：", target_x, target_y
-	print "发送定位结果", parm[0], parm[1]
+    parm, diff = getLocAfterPSO(P, d2)
+    #print "最小Difference值："
+    #print diff
+    #print "实际坐标：", target_x, target_y
+    print "发送定位结果", parm[0], parm[1]
+    print "\n"
 	
-	s = "xy:"+str(round(parm[0],4))+","+str(round(parm[1],4))
+    s = "xy:"+str(round(parm[0],4))+","+str(round(parm[1],4))
     conn.send(s)
     time.sleep(0.1)
     conn.close()
