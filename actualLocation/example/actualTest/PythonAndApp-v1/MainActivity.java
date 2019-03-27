@@ -1,4 +1,5 @@
 package yong.webtest;
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -16,7 +17,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class MainActivity extends AppCompatActivity {
-
+    private static final String TAG = "WebTAG";
     private TextView text;
 
     /** Called when the activity is first created. */
@@ -25,17 +26,19 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         text = (TextView)findViewById(R.id.text);
+
         new Thread(networkTask).start();
 
     }
 
+    @SuppressLint("HandlerLeak")
     Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             Bundle data = msg.getData();
-            String val = data.getString("value");
-            text.setText(text.getText()+"\n"+val);
+            String val = data.getString("key");
+            text.setText(val);
         }
     };
 
@@ -58,11 +61,10 @@ public class MainActivity extends AppCompatActivity {
                     BufferedReader in = new BufferedReader(new InputStreamReader(is));
                     String info = null;
                     while ((info = in.readLine()) != null) {
-                        //System.out.println("我是客户端，Python服务器说："+info);
-                        //Log.w("MAIN", "我是客户端，Python服务器说：" + info);
+                        Log.d(TAG, "get info from server：" + info);
                         Message msg = new Message();
                         Bundle data = new Bundle();
-                        data.putString("value", "From python：" + info);
+                        data.putString("key", "From python：" + info);
                         msg.setData(data);
                         handler.sendMessage(msg);
                     }
@@ -70,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
                     in.close();
                     socket.close();
                 } catch (UnknownHostException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
