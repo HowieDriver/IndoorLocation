@@ -1,12 +1,15 @@
 package yong.bttest;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Handler;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,12 +29,12 @@ import static yong.bttest.mMethod.sortMapByValue;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "bttest";
-    private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private Handler mHandler =  new Handler();
     private BluetoothAdapter.LeScanCallback mLeScanCallback;
-    private TextView beacon0,beacon1,beacon2,beacon3;
+    private TextView uidTV, grupTV, subGrupTV, rssiTV;
     private boolean flag_firstOpenFile=true;
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,14 +42,17 @@ public class MainActivity extends AppCompatActivity {
         if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
         }
-        beacon0 = (TextView)findViewById(R.id.beacon0);
-        beacon1 = (TextView)findViewById(R.id.beacon1);
-        beacon2 = (TextView)findViewById(R.id.beacon2);
-        beacon3 = (TextView)findViewById(R.id.beacon3);
+        uidTV = findViewById(R.id.beacon0);
+        grupTV = findViewById(R.id.beacon1);
+        subGrupTV = findViewById(R.id.beacon2);
+        rssiTV = findViewById(R.id.beacon3);
 
-        initialize();
-        OpenBlue();
-        //mHandler.postDelayed(mRunnable, 1000);
+        if(initialize()) {
+            Log.d(TAG, "initialize successful");
+        }
+        else {
+            Log.e(TAG, "initialize failed");
+        }
         save("start:\n");
         mLeScanCallback = new mmLeScanCallback();
         scanLeDevice();
@@ -57,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "Unable to initialize Bluetooth.");
             return false;
         }
-        mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothManager mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         if (mBluetoothManager == null){
             Log.e(TAG, "Unable to initialize BluetoothManager.");
             return false;
@@ -67,26 +73,19 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "Unable to obtain a BluetoothAdapter.");
             return false;
         }
-        return true;
+        return mBluetoothAdapter.isEnabled() || mBluetoothAdapter.enable();
     }
 
-    public boolean OpenBlue()
-    {
-        //开启蓝牙
-        if (!mBluetoothAdapter.isEnabled())
-            return mBluetoothAdapter.enable();
-        else
-            return true;
-    }
 
     private void scanLeDevice(){
         Log.e(TAG, "start scanLeDevice");
-        mBluetoothAdapter.startLeScan(mLeScanCallback);//这句就是开始扫描了
+        mBluetoothAdapter.startLeScan(mLeScanCallback);//开始扫描
     }
 
     class mmLeScanCallback implements BluetoothAdapter.LeScanCallback {
-            @Override
-            public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord){
+        @SuppressLint("SetTextI18n")
+        @Override
+        public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord){
             byte[] data = new byte[31];
             System.arraycopy(scanRecord, 0, data, 0, 31);
             String hexString = bytesToHexString(data);
@@ -107,38 +106,23 @@ public class MainActivity extends AppCompatActivity {
                 String majorString = bytesToHexString(majorBytes);
                 String minorString = bytesToHexString(minorBytes);
                 String txPowerString = bytesToHexString(txPowerBytes);
-//                Log.w(TAG, "uuidBytes:" + uuidString);
-//                Log.w(TAG, "majorBytes:" + majorString);
-//                Log.w(TAG, "minorBytes:" + minorString);
-//                Log.w(TAG, "txPowerBytes:" + txPowerString);
-//                Log.w(TAG, "rssi:" + rssi);
 
-                if((majorBytes[0]==0x13 || majorBytes[1]==0x09) && (minorBytes[0]==0x68 || minorBytes[1]==0x6f)) {
+                //if((majorBytes[0]==0x13 || majorBytes[1]==0x09) && (minorBytes[0]==0x68 || minorBytes[1]==0x6f)) {
                     Log.w(TAG, "uuidBytes:" + uuidString);
                     Log.w(TAG, "majorBytes:" + majorString);
                     Log.w(TAG, "minorBytes:" + minorString);
                     Log.w(TAG, "txPowerBytes:" + txPowerString);
                     Log.w(TAG, "rssi:" + rssi);
-                    beacon0.setText(uuidString);
-                    beacon1.setText(majorString);
-                    beacon2.setText(minorString);
-                    beacon3.setText(txPowerString + "+" + rssi);
-                }
+                    uidTV.setText("Uid: " + uuidString);
+                    grupTV.setText("Grup: " + majorString);
+                    subGrupTV.setText("SubGrup: " + minorString);
+                    rssiTV.setText("Rssi: " + rssi);
+                //}
                 save(uuidString+":\t"+rssi+"\n");
 
             }
         }
     }
-
-    /*
-    Runnable mRunnable = new Runnable() {
-        @Override
-        public void run() {
-
-            mHandler.postDelayed(this, 1000);
-            Log.i(TAG, "runnable delay 1000ms!" );
-        }
-    };*/
 
     public void save(String inputText) {
         FileOutputStream out = null;
@@ -178,5 +162,5 @@ public class MainActivity extends AppCompatActivity {
     }
 
 }
-    
+
 
