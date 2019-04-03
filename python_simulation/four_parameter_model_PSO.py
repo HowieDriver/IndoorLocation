@@ -1,50 +1,56 @@
 # -*- coding: utf-8 -*-
 import sys
-
 reload(sys)
 sys.setdefaultencoding('utf-8')
-
 import numpy as np
 import matplotlib.pyplot as plt
-
+import random
 
 # 目标函数定义，x中每个元素对应一个参数
 def ras(absolute_x, absolute_y, relative_x, relative_y, parameter):
     y = 0
+    m1 = 1 + parameter[0]
+    angle = parameter[1] / 180.0 * np.pi
     for i in range(5):
-        t = np.square( (1+parameter[0]) * relative_x[i] * np.cos(parameter[1]) \
-                     - (1+parameter[0]) * relative_y[i] * np.sin(parameter[1]) + parameter[2] - absolute_x[i] )\
-            + np.square( (1+parameter[0]) * relative_x[i] * np.sin(parameter[1]) \
-                     + (1+parameter[0]) * relative_y[i] * np.cos(parameter[1]) + parameter[3] - absolute_y[i] )
+        t = np.square(m1 * (relative_x[i] * np.cos(angle) - relative_y[i] * np.sin(angle)) + parameter[2] - absolute_x[i] )\
+          + np.square(m1 * (relative_x[i] * np.sin(angle) + relative_y[i] * np.cos(angle)) + parameter[3] - absolute_y[i] )
         y += t
     return y
 
 def fin_pso(absolute_x, absolute_y, relative_x, relative_y):
     MumberOfparm = 4
     # 参数初始化
-    w = 0.1
-    c1 = 1.49445
-    c2 = 1.49445
+    w = 1
+    c1 = 2
+    c2 = 2
+    # c1 = 1.49445
+    # c2 = 1.49445
 
-    maxgen = 50  # 进化次数
-    sizepop = 500  # 种群规模,群体较小时容易陷入局部最优解
+    maxgen = 200  # 进化次数
+    sizepop = 5000  # 种群规模,群体较小时容易陷入局部最优解
                     #群体较大当数目到一定程度优化变化不明显
 
     # 粒子速度和位置的范围
-    Vmax = 1
-    Vmin = -1
-    popmax = [ 2,  np.pi,  5,  5]
-    popmin = [-2, -np.pi, -5, -5]
+    Vmax = [0, 15, 1, 1]
+    Vmin = [0, -15, -1, -1]
+    popmax = [ 2,  180,  5,  5]
+    popmin = [-2, -180, -5, -5]
 
     # 产生初始粒子和速度
     pop = np.random.uniform(-1, 1, (MumberOfparm, sizepop))
-    pop[0] *= 2
-    pop[1] *= np.pi
+    for i in range(sizepop):
+        tt = random.randrange(-2, 1, 2)
+        pop[0][i] = tt
+    pop[1] *= 180
     pop[2] *= 5
     pop[3] *= 5
+    # print "initial pop =\n", pop
     v = np.random.uniform(-1, 1, (MumberOfparm, sizepop))
-
+    v[0] = 0
+    v[1] *= 10
+    # print "initial v=\n", v
     fitness = ras(absolute_x, absolute_y, relative_x, relative_y, pop)  # 计算适应度
+    # print "initial fitness=\n", fitness
     i = np.argmin(fitness)  # 找最好的个体
     gbest = pop  # 记录个体最优位置，第一次就是最好
     zbest = pop[:, i]  # 记录群体最优位置
@@ -57,26 +63,37 @@ def fin_pso(absolute_x, absolute_y, relative_x, relative_y):
     while t < maxgen:
 
         # 速度更新
-        v = w * v + c1 * np.random.random() * (gbest - pop) + c2 * np.random.random() * (zbest.reshape(4, 1) - pop)
-        v[v > Vmax] = Vmax  # 限制速度
-        v[v < Vmin] = Vmin
+        r1 = np.random.rand(4, sizepop)
+        r2 = np.random.rand(4, sizepop)
+        v = w * v + c1 * r1 * (gbest - pop) + c2 * r2 * (zbest.reshape(4, 1) - pop)
+        v[0] = 0
 
         # 位置更新
         pop = pop + v
-        for jj in range(MumberOfparm):
+        for ti in range(3):
+            i = ti+1
             for j in range(sizepop):
-                if pop[jj][j] > popmax[jj]:
-                    pop[jj][j] = popmax[jj]
-                if pop[jj][j] < popmin[jj]:
-                    pop[jj][j] = popmin[jj]
-
-        # 自适应变异
-        p = np.random.random()             # 随机生成一个0~1内的数
-        if p > 0.8:                          # 如果这个数落在变异概率区间内，则进行变异处理
-            temp = np.random.random()
-            temp *= 5
-            k = np.random.randint(0,MumberOfparm)     # 在[0,2)之间随机选一个整数
-            pop[:,k] = temp  # 在选定的位置进行变异
+                if pop[i][j] > popmax[i]:
+                    pop[i][j] = popmax[i]
+                if pop[i][j] < popmin[i]:
+                    pop[i][j] = popmin[i]
+        for ti in range(3):
+            i = ti+1
+            for j in range(sizepop):
+                if v[i][j] > Vmax[i]:
+                    v[i][j] = Vmax[i]
+                if v[i][j] < Vmax[i]:
+                    v[i][j] = Vmax[i]
+        # print "##################################################"
+        # print "pop=\n", pop
+        # print "##################################################"
+        # # 自适应变异
+        # p = np.random.random()             # 随机生成一个0~1内的数
+        # if p > 0.8:                          # 如果这个数落在变异概率区间内，则进行变异处理
+        #     temp = np.random.random()
+        #     temp *= 5
+        #     k = np.random.randint(0,MumberOfparm)     # 在[0,2)之间随机选一个整数
+        #     pop[:,k] = temp  # 在选定的位置进行变异
 
 
         # 计算适应度值
@@ -95,12 +112,13 @@ def fin_pso(absolute_x, absolute_y, relative_x, relative_y):
 
         record[t] = fitnesszbest  # 记录群体最优位置的变化
         t = t + 1
-
+        if fitnesszbest < 10:
+            break
     # 结果分析
     plt.plot(record, 'b-',label='1234')
     plt.xlabel(u'迭代次数')
     plt.ylabel(u'适应度')
-    plt.title(u'适应度曲线,群组大小为500')
-    print plt.ylim()
+    # plt.title(u'适应度曲线,群组大小为500')
+    # print plt.ylim()
     plt.show()
-    return zbest,record[t-1]
+    return zbest, record[t-1]
